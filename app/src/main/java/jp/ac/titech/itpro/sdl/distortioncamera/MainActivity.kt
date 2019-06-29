@@ -1,6 +1,11 @@
 package jp.ac.titech.itpro.sdl.distortioncamera
 
 import android.Manifest
+import android.content.Context
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.os.Bundle
 import android.support.v4.app.FragmentActivity
 import android.util.Log
@@ -8,19 +13,24 @@ import android.widget.Toast
 import com.androidexperiments.shadercam.fragments.PermissionsHelper
 
 import com.androidexperiments.shadercam.fragments.VideoFragment
-import com.androidexperiments.shadercam.gl.VideoRenderer
 import com.androidexperiments.shadercam.utils.ShaderUtils
 import com.uncorkedstudios.android.view.recordablesurfaceview.RecordableSurfaceView
 import java.util.*
 
 
-class MainActivity : FragmentActivity(), PermissionsHelper.PermissionsListener {
+class MainActivity : FragmentActivity(), PermissionsHelper.PermissionsListener, SensorEventListener {
 
     private var videoFragment: VideoFragment? = null
 
     private lateinit var recordableSurfaceView: RecordableSurfaceView
-    private lateinit var videoRenderer: VideoRenderer
+    private lateinit var renderer: CameraRenderer
     private lateinit var permissionsHelper: PermissionsHelper
+
+    private var sensorManager: SensorManager? = null
+    private var gyroscope: Sensor? = null
+
+    private var prevTimestamp: Double? = null
+    private var angle: Double = 0.0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,14 +41,18 @@ class MainActivity : FragmentActivity(), PermissionsHelper.PermissionsListener {
         if (PermissionsHelper.isMorHigher()) {
             setupPermissions()
         }
+
+        setupSensor()
     }
 
     override fun onResume() {
         super.onResume()
         Log.d(TAG, "onResume()")
 
-        videoRenderer = TestRenderer(this)
+        renderer = CameraRenderer(this)
         recordableSurfaceView = findViewById(R.id.texture_view)
+        setupAngle()
+        sensorManager?.registerListener(this, gyroscope!!, SensorManager.SENSOR_DELAY_FASTEST)
 
         ShaderUtils.goFullscreen(this.window)
 
@@ -46,7 +60,7 @@ class MainActivity : FragmentActivity(), PermissionsHelper.PermissionsListener {
             if (!permissionsHelper.checkPermissions()) {
                 return
             } else {
-                setupVideoFragment(videoRenderer)
+                setupVideoFragment()
                 recordableSurfaceView.resume()
 
                 val size = android.graphics.Point()
@@ -61,6 +75,7 @@ class MainActivity : FragmentActivity(), PermissionsHelper.PermissionsListener {
 
         shutdownCamera()
         recordableSurfaceView.pause()
+        sensorManager?.unregisterListener(this)
     }
 
     override fun onPermissionsSatisfied() {
@@ -70,10 +85,25 @@ class MainActivity : FragmentActivity(), PermissionsHelper.PermissionsListener {
     override fun onPermissionsFailed(failedPermissions: Array<String>) {
         Log.e(TAG, "onPermissionsFailed(): " + Arrays.toString(failedPermissions))
         Toast.makeText(
-            this, "DistortionCamera needs all permissions to function, please try again.",
+            this, R.string.toast_permissions_failed,
             Toast.LENGTH_LONG
         ).show()
         this.finish()
+    }
+
+    override fun onSensorChanged(event: SensorEvent) {
+        val omegaZ = event.values[2]  // z-axis angular velocity (rad/sec)
+        val timestamp = event.timestamp
+        prevTimestamp?.let {
+            val sec = (timestamp - it) * 1e-9
+            angle += omegaZ * sec
+        }
+        renderer.angle = angle
+        prevTimestamp = timestamp.toDouble()
+    }
+
+    override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {
+        Log.d(TAG, "onAccuracyChanged: accuracy=$accuracy")
     }
 
     private fun setupPermissions() {
@@ -85,7 +115,7 @@ class MainActivity : FragmentActivity(), PermissionsHelper.PermissionsListener {
         )
     }
 
-    private fun setupVideoFragment(renderer: VideoRenderer) {
+    private fun setupVideoFragment() {
         videoFragment = VideoFragment.getInstance().also { videoFragment ->
             videoFragment.setRecordableSurfaceView(recordableSurfaceView)
             videoFragment.videoRenderer = renderer
@@ -95,6 +125,26 @@ class MainActivity : FragmentActivity(), PermissionsHelper.PermissionsListener {
             transaction.add(videoFragment, TAG_CAMERA_FRAGMENT)
             transaction.commit()
         }
+    }
+
+    private fun setupSensor() {
+        sensorManager = getSystemService(Context.SENSOR_SERVICE) as? SensorManager
+        if (sensorManager == null) {
+            Toast.makeText(this, R.string.toast_no_sensor_manager, Toast.LENGTH_LONG).show()
+            finish()
+            return
+        }
+        gyroscope = sensorManager?.getDefaultSensor(Sensor.TYPE_GYROSCOPE)
+        if (gyroscope == null) {
+            Toast.makeText(this, R.string.toast_no_gyroscope, Toast.LENGTH_LONG).show()
+            finish()
+            return
+        }
+    }
+
+    private fun setupAngle() {
+        angle = 0.0
+        prevTimestamp = null
     }
 
     private fun shutdownCamera() {

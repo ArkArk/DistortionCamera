@@ -9,6 +9,7 @@ varying vec2 v_CamTexCoordinate;
 varying vec2 v_TexCoordinate;
 
 uniform vec3 resolution;
+uniform float angle; // [rad]
 
 // t \in [0, 1]
 vec2 rotate(vec2 p, float t) {
@@ -21,5 +22,7 @@ void main () {
     vec2 uv = (2.0*v_CamTexCoordinate - resolution.xy) / min(resolution.x, resolution.y);
 
     float t = length(uv);
+    t = t*t*t*t;
+    t = t * angle / 2.0 / PI;
     gl_FragColor = texture2D(camTexture, rotate(uv, t)*0.5 + vec2(0.5));
 }
