@@ -1,10 +1,11 @@
 package jp.ac.titech.itpro.sdl.distortioncamera
 
 import android.content.Context
+import android.graphics.SurfaceTexture
 import android.opengl.GLES20
-import com.androidexperiments.shadercam.gl.VideoRenderer
+import com.androidexperiments.shadercam.gl.CameraRenderer
 
-class DistortionRenderer(context: Context) : VideoRenderer(context, "camera.frag", "camera.vert") {
+class DistortionRenderer(context: Context, previewSurface: SurfaceTexture, width: Int, height: Int) : CameraRenderer(context, previewSurface, width, height, "camera.frag", "camera.vert") {
 
     var angle: Double = 0.0
 
