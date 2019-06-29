@@ -9,6 +9,7 @@ import android.hardware.SensorManager
 import android.os.Bundle
 import android.support.v4.app.FragmentActivity
 import android.util.Log
+import android.view.View
 import android.widget.Toast
 import com.androidexperiments.shadercam.fragments.PermissionsHelper
 
@@ -23,7 +24,7 @@ class MainActivity : FragmentActivity(), PermissionsHelper.PermissionsListener, 
     private var videoFragment: VideoFragment? = null
 
     private lateinit var recordableSurfaceView: RecordableSurfaceView
-    private lateinit var renderer: CameraRenderer
+    private lateinit var renderer: DistortionRenderer
     private lateinit var permissionsHelper: PermissionsHelper
 
     private var sensorManager: SensorManager? = null
@@ -49,8 +50,8 @@ class MainActivity : FragmentActivity(), PermissionsHelper.PermissionsListener, 
         super.onResume()
         Log.d(TAG, "onResume()")
 
-        renderer = CameraRenderer(this)
-        recordableSurfaceView = findViewById(R.id.texture_view)
+        renderer = DistortionRenderer(this)
+        recordableSurfaceView = findViewById(R.id.surface_view)
         setupAngle()
         sensorManager?.registerListener(this, gyroscope!!, SensorManager.SENSOR_DELAY_FASTEST)
 
@@ -104,6 +105,10 @@ class MainActivity : FragmentActivity(), PermissionsHelper.PermissionsListener, 
 
     override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {
         Log.d(TAG, "onAccuracyChanged: accuracy=$accuracy")
+    }
+
+    fun onClickSwapCameraButton(view: View) {
+        videoFragment?.swapCamera()
     }
 
     private fun setupPermissions() {
