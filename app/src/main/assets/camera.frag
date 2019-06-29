@@ -18,11 +18,19 @@ vec2 rotate(vec2 p, float t) {
     return vec2(p.x*c - p.y*s, p.y*c + p.x*s);
 }
 
+vec4 getPixel(vec2 p) {
+    return texture2D(camTexture, p*0.5 + vec2(0.5));
+}
+
 void main () {
     vec2 uv = (2.0*v_CamTexCoordinate - resolution.xy) / min(resolution.x, resolution.y);
+    float len = length(uv);
 
-    float t = length(uv);
+    float t = len;
     t = t*t*t*t;
-    t = t * angle / 2.0 / PI;
-    gl_FragColor = texture2D(camTexture, rotate(uv, t)*0.5 + vec2(0.5));
+    t = t * angle / (2.0 * PI);
+
+    uv = rotate(uv, t);
+
+    gl_FragColor = getPixel(uv);
 }

@@ -7,7 +7,7 @@ import com.androidexperiments.shadercam.gl.CameraRenderer
 
 class DistortionRenderer(context: Context, previewSurface: SurfaceTexture, width: Int, height: Int) : CameraRenderer(context, previewSurface, width, height, "camera.frag", "camera.vert") {
 
-    var angle: Double = 0.0
+    var angle: Float = 0f
 
     override fun setUniformsAndAttribs() {
         super.setUniformsAndAttribs()
@@ -16,6 +16,6 @@ class DistortionRenderer(context: Context, previewSurface: SurfaceTexture, width
         GLES20.glUniform3f(resolutionHandle, 1f, 1f, 1f)
 
         val angleHandle = GLES20.glGetUniformLocation(mCameraShaderProgram, "angle")
-        GLES20.glUniform1f(angleHandle, angle.toFloat())
+        GLES20.glUniform1f(angleHandle, angle)
     }
 }

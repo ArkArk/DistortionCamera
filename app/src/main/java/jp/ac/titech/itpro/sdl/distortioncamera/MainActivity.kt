@@ -42,7 +42,7 @@ class MainActivity : FragmentActivity(), CameraRenderer.OnRendererReadyListener,
     private var sensorManager: SensorManager? = null
     private var gyroscope: Sensor? = null
 
-    private var prevTimestamp: Double? = null
+    private var prevTimestamp: Long? = null
     private var angle: Double = 0.0
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -59,14 +59,13 @@ class MainActivity : FragmentActivity(), CameraRenderer.OnRendererReadyListener,
         if (PermissionsHelper.isMorHigher()) {
             setupPermissions()
         }
-
     }
 
     override fun onResume() {
         super.onResume()
         Log.d(TAG, "onResume()")
 
-        setupAngle()
+        initSensorValue()
         sensorManager?.registerListener(this, gyroscope!!, SensorManager.SENSOR_DELAY_FASTEST)
 
         ShaderUtils.goFullscreen(this.window)
@@ -128,16 +127,19 @@ class MainActivity : FragmentActivity(), CameraRenderer.OnRendererReadyListener,
         }
     }
 
-
     override fun onSensorChanged(event: SensorEvent) {
-        val omegaZ = event.values[2]  // z-axis angular velocity (rad/sec)
         val timestamp = event.timestamp
-        prevTimestamp?.let {
-            val sec = (timestamp - it) * 1e-9
-            angle += omegaZ * sec
+        when(event.sensor.type) {
+            Sensor.TYPE_GYROSCOPE -> {
+                val omegaZ = event.values[2]  // z-axis angular velocity [rad/sec]
+                prevTimestamp?.let {
+                    val dt = (timestamp - it) * 1e-9
+                    angle += omegaZ * dt
+                }
+                distortionRenderer?.angle = angle.toFloat()
+                prevTimestamp = timestamp
+            }
         }
-        distortionRenderer?.angle = angle
-        prevTimestamp = timestamp.toDouble()
     }
 
     override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {
@@ -208,9 +210,9 @@ class MainActivity : FragmentActivity(), CameraRenderer.OnRendererReadyListener,
         }
     }
 
-    private fun setupAngle() {
-        angle = 0.0
+    private fun initSensorValue() {
         prevTimestamp = null
+        angle = 0.0
     }
 
     private fun shutdownCamera(shouldRestart: Boolean) {
