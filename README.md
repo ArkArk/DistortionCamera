@@ -3,6 +3,8 @@ Distortion Camera
 
 A camera app with distortion space in response to sensors.
 
+![](screenshot.png)
+
 ### Prerequisites
 
 - Minimum API Level ― API 24: Android 7.0 (Nougat)
