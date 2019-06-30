@@ -16,6 +16,7 @@ import android.support.v4.app.FragmentActivity
 import android.util.Log
 import android.view.TextureView
 import android.view.View
+import android.widget.CheckBox
 import android.widget.Toast
 import com.androidexperiments.shadercam.fragments.CameraFragment
 import com.androidexperiments.shadercam.fragments.PermissionsHelper
@@ -62,6 +63,7 @@ class MainActivity : FragmentActivity(), CameraRenderer.OnRendererReadyListener,
 
         setupCameraFragment()
         setupSensor()
+        setupCheckbox()
 
         if (PermissionsHelper.isMorHigher()) {
             setupPermissions()
@@ -72,7 +74,6 @@ class MainActivity : FragmentActivity(), CameraRenderer.OnRendererReadyListener,
         super.onResume()
         Log.d(TAG, "onResume()")
 
-        initSensorValue()
         sensorManager?.registerListener(this, gyroscope!!, SensorManager.SENSOR_DELAY_GAME)
         sensorManager?.registerListener(this, accelerometer!!, SensorManager.SENSOR_DELAY_GAME)
 
@@ -204,6 +205,7 @@ class MainActivity : FragmentActivity(), CameraRenderer.OnRendererReadyListener,
         }
 
         cameraFragment?.configureTransform(width, height)
+        initSensorValue()
     }
 
     private fun setupCameraFragment() {
@@ -242,14 +244,39 @@ class MainActivity : FragmentActivity(), CameraRenderer.OnRendererReadyListener,
         }
     }
 
+    private fun setupCheckbox() {
+        val gyroscopeCheckbox = findViewById<CheckBox>(R.id.gyroscope_checkbox)
+        gyroscopeCheckbox.setOnCheckedChangeListener { _, isChecked ->
+            distortionRenderer?.activeGyroscope = isChecked
+            initGyroscopeValue()
+        }
+
+        val accelerometerCheckbox = findViewById<CheckBox>(R.id.accelerometer_checkbox)
+        accelerometerCheckbox.setOnCheckedChangeListener { _, isChecked ->
+            distortionRenderer?.activeAccelerometer = isChecked
+            initAccelerometerValue()
+        }
+    }
+
     private fun initSensorValue() {
+        initGyroscopeValue()
+        initAccelerometerValue()
+    }
+
+    private fun initGyroscopeValue() {
         prevGyroscopeTimestamp = null
         angle = 0.0
+        val gyroscopeCheckbox = findViewById<CheckBox>(R.id.gyroscope_checkbox)
+        distortionRenderer?.activeGyroscope = gyroscopeCheckbox.isChecked
+    }
 
+    private fun initAccelerometerValue() {
         prevAccelerometerTimestamp = null
         accZ = 0.0
         velZ = 0.0
         posZ = 0.0
+        val accelerometerCheckbox = findViewById<CheckBox>(R.id.accelerometer_checkbox)
+        distortionRenderer?.activeAccelerometer = accelerometerCheckbox.isChecked
     }
 
     private fun shutdownCamera(shouldRestart: Boolean) {

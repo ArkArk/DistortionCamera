@@ -10,6 +10,9 @@ class DistortionRenderer(context: Context, previewSurface: SurfaceTexture, width
     var angle: Float = 0f
     var posZ: Float = 0f
 
+    var activeGyroscope: Boolean = false
+    var activeAccelerometer: Boolean = false
+
     override fun setUniformsAndAttribs() {
         super.setUniformsAndAttribs()
 
@@ -21,5 +24,11 @@ class DistortionRenderer(context: Context, previewSurface: SurfaceTexture, width
 
         val posZHandle = GLES20.glGetUniformLocation(mCameraShaderProgram, "posZ")
         GLES20.glUniform1f(posZHandle, posZ)
+
+        val activeGyroscopeHandle = GLES20.glGetUniformLocation(mCameraShaderProgram, "activeGyroscope")
+        GLES20.glUniform1i(activeGyroscopeHandle, if (activeGyroscope) 1 else 0)
+
+        val activeAccelerometerHandle = GLES20.glGetUniformLocation(mCameraShaderProgram, "activeAccelerometer")
+        GLES20.glUniform1i(activeAccelerometerHandle, if (activeAccelerometer) 1 else 0)
     }
 }

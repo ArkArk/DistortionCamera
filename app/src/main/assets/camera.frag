@@ -11,6 +11,8 @@ varying vec2 v_TexCoordinate;
 uniform vec3 resolution;
 uniform float angle; // [rad]
 uniform float posZ; // [m]
+uniform int activeGyroscope;
+uniform int activeAccelerometer;
 
 // t \in [0, 1]
 vec2 rotate(vec2 p, float t) {
@@ -31,16 +33,20 @@ void main () {
     vec2 uv = (2.0*v_CamTexCoordinate - resolution.xy) / min(resolution.x, resolution.y);
     float len = length(uv);
 
-    float t = len;
-    t = t*t*t*t;
-    t = t * angle / (2.0 * PI);
+    if (activeGyroscope != 0) {
+        float t = len;
+        t = t*t*t*t;
+        t = t * angle / (2.0 * PI);
 
-    uv = rotate(uv, t);
+        uv = rotate(uv, t);
+    }
 
-    float s = mod(len * exp(posZ * 10.0), 2.0);
-    if (s > 1.0) s = 2.0 - s;
+    if (activeAccelerometer != 0) {
+        float s = mod(len * exp(posZ * 10.0), 2.0);
+        if (s > 1.0) s = 2.0 - s;
 
-    uv = scale(normalize(uv), s);
+        uv = scale(normalize(uv), s);
+    }
 
     gl_FragColor = getPixel(uv);
 }

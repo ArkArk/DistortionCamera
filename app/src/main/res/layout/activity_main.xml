@@ -48,4 +48,28 @@
             app:layout_constraintRight_toRightOf="parent"
     />
 
+    <CheckBox
+            android:id="@+id/gyroscope_checkbox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="20dp"
+            android:checked="true"
+            android:scaleX="2.0"
+            android:scaleY="2.0"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+    />
+
+    <CheckBox
+            android:id="@+id/accelerometer_checkbox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="20dp"
+            android:checked="false"
+            android:scaleX="2.0"
+            android:scaleY="2.0"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toRightOf="@+id/gyroscope_checkbox"
+    />
+
 </android.support.constraint.ConstraintLayout>
