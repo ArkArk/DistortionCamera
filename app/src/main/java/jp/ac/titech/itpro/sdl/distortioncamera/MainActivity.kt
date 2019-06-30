@@ -175,8 +175,12 @@ class MainActivity : FragmentActivity(), CameraRenderer.OnRendererReadyListener,
 
     fun onClickTakeCameraButton(view: View) {
         Log.d(TAG, "onClickTakeCameraButton")
-
         saveImageFile()
+    }
+
+    fun onClickInitSensorButton(view: View) {
+        Log.d(TAG, "onClickInitSensorButton")
+        initSensorValue()
     }
 
     private fun setupPermissions() {
