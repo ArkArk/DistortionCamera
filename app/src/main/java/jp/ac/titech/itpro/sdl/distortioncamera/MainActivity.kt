@@ -159,7 +159,6 @@ class MainActivity : FragmentActivity(), CameraRenderer.OnRendererReadyListener,
                     velZ *= 0.9
                 }
                 distortionRenderer?.posZ = posZ.toFloat()
-                Log.w(TAG, "$posZ, $velZ, $accZ")
                 prevAccelerometerTimestamp = timestamp
             }
         }
