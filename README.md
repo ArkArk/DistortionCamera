@@ -1,14 +1,14 @@
 Distortion Camera
 ===
 
-センサに反応して空間を歪ませながら撮影できるカメラ
-
-- [ソフトウェア開発演習](https://itspsdl.github.io/)の自由課題
+A camera app with distortion space in response to sensors.
 
 ### Prerequisites
 
 - Minimum API Level ― API 24: Android 7.0 (Nougat)
 
-### Links
+### Info
 
-- [発表会プログラム](https://github.com/itspsdl/Demo2019)
+This is a final assignment at [itspsdl](https://itspsdl.github.io/).
+
+- [Presentation program (Japanese)](https://github.com/itspsdl/Demo2019)
