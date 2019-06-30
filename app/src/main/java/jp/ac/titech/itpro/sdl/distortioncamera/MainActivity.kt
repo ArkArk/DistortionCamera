@@ -25,6 +25,7 @@ import com.androidexperiments.shadercam.utils.ShaderUtils
 import java.io.File
 import java.io.FileOutputStream
 import java.util.*
+import kotlin.math.abs
 
 
 class MainActivity : FragmentActivity(), CameraRenderer.OnRendererReadyListener, PermissionsHelper.PermissionsListener, SensorEventListener {
@@ -41,9 +42,15 @@ class MainActivity : FragmentActivity(), CameraRenderer.OnRendererReadyListener,
 
     private var sensorManager: SensorManager? = null
     private var gyroscope: Sensor? = null
+    private var accelerometer: Sensor? = null
 
-    private var prevTimestamp: Long? = null
+    private var prevGyroscopeTimestamp: Long? = null
     private var angle: Double = 0.0
+
+    private var prevAccelerometerTimestamp: Long? = null
+    private var accZ: Double = 0.0
+    private var velZ: Double = 0.0
+    private var posZ: Double = 0.0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -66,7 +73,8 @@ class MainActivity : FragmentActivity(), CameraRenderer.OnRendererReadyListener,
         Log.d(TAG, "onResume()")
 
         initSensorValue()
-        sensorManager?.registerListener(this, gyroscope!!, SensorManager.SENSOR_DELAY_FASTEST)
+        sensorManager?.registerListener(this, gyroscope!!, SensorManager.SENSOR_DELAY_GAME)
+        sensorManager?.registerListener(this, accelerometer!!, SensorManager.SENSOR_DELAY_GAME)
 
         ShaderUtils.goFullscreen(this.window)
 
@@ -130,14 +138,29 @@ class MainActivity : FragmentActivity(), CameraRenderer.OnRendererReadyListener,
     override fun onSensorChanged(event: SensorEvent) {
         val timestamp = event.timestamp
         when(event.sensor.type) {
+
             Sensor.TYPE_GYROSCOPE -> {
                 val omegaZ = event.values[2]  // z-axis angular velocity [rad/sec]
-                prevTimestamp?.let {
+                prevGyroscopeTimestamp?.let {
                     val dt = (timestamp - it) * 1e-9
                     angle += omegaZ * dt
                 }
                 distortionRenderer?.angle = angle.toFloat()
-                prevTimestamp = timestamp
+                prevGyroscopeTimestamp = timestamp
+            }
+
+            Sensor.TYPE_LINEAR_ACCELERATION -> {
+                accZ = event.values[2].toDouble()  // z-axis acceleration excluding gravity [m/s^2]
+                if (abs(accZ) < 1.0) accZ = 0.0
+                prevAccelerometerTimestamp?.let {
+                    val dt = (timestamp - it) * 1e-9
+                    posZ += velZ*dt
+                    velZ += accZ*dt
+                    velZ *= 0.9
+                }
+                distortionRenderer?.posZ = posZ.toFloat()
+                Log.w(TAG, "$posZ, $velZ, $accZ")
+                prevAccelerometerTimestamp = timestamp
             }
         }
     }
@@ -208,11 +231,22 @@ class MainActivity : FragmentActivity(), CameraRenderer.OnRendererReadyListener,
             finish()
             return
         }
+        accelerometer = sensorManager?.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION)
+        if (accelerometer == null) {
+            Toast.makeText(this, R.string.toast_no_linear_acceleration, Toast.LENGTH_LONG).show()
+            finish()
+            return
+        }
     }
 
     private fun initSensorValue() {
-        prevTimestamp = null
+        prevGyroscopeTimestamp = null
         angle = 0.0
+
+        prevAccelerometerTimestamp = null
+        accZ = 0.0
+        velZ = 0.0
+        posZ = 0.0
     }
 
     private fun shutdownCamera(shouldRestart: Boolean) {

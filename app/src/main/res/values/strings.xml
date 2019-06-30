@@ -4,4 +4,5 @@
     <string name="toast_permissions_failed">DistortionCamera needs all permissions to function, please try again.</string>
     <string name="toast_no_sensor_manager">No sensor manager available</string>
     <string name="toast_no_gyroscope">No gyroscope available</string>
+    <string name="toast_no_linear_acceleration">No linear acceleration available</string>
 </resources>

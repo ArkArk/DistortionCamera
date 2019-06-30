@@ -10,12 +10,17 @@ varying vec2 v_TexCoordinate;
 
 uniform vec3 resolution;
 uniform float angle; // [rad]
+uniform float posZ; // [m]
 
 // t \in [0, 1]
 vec2 rotate(vec2 p, float t) {
     float c = cos(t * 2.0 * PI);
     float s = sin(t * 2.0 * PI);
     return vec2(p.x*c - p.y*s, p.y*c + p.x*s);
+}
+
+vec2 scale(vec2 p, float t) {
+    return p * t;
 }
 
 vec4 getPixel(vec2 p) {
@@ -31,6 +36,11 @@ void main () {
     t = t * angle / (2.0 * PI);
 
     uv = rotate(uv, t);
+
+    float s = mod(len * exp(posZ * 10.0), 2.0);
+    if (s > 1.0) s = 2.0 - s;
+
+    uv = scale(normalize(uv), s);
 
     gl_FragColor = getPixel(uv);
 }
