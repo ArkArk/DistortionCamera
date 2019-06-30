@@ -42,7 +42,7 @@ void main () {
     }
 
     if (activeAccelerometer != 0) {
-        float s = mod(len * exp(posZ * 10.0), 2.0);
+        float s = mod(len * exp(posZ * 20.0), 2.0);
         if (s > 1.0) s = 2.0 - s;
 
         uv = scale(normalize(uv), s);
