@@ -14,7 +14,7 @@ A camera app with distortion space in response to sensors.
 This app uses two sensors:
 
 - Gyroscope sensor: It is active if the left checkbox is checked.
-- Linear acceleration sensor: It is active if the left checkbox is checked.
+- Linear acceleration sensor: It is active if the right checkbox is checked.
 
 ### Info
 
