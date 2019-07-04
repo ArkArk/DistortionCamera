@@ -21,7 +21,6 @@ import android.widget.Toast
 import com.androidexperiments.shadercam.fragments.CameraFragment
 import com.androidexperiments.shadercam.fragments.PermissionsHelper
 import com.androidexperiments.shadercam.gl.CameraRenderer
-
 import com.androidexperiments.shadercam.utils.ShaderUtils
 import java.io.File
 import java.io.FileOutputStream
